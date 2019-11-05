@@ -11,7 +11,6 @@ use crate::{
     app_auth::{app_state, AppState},
     client::AuthClient,
     config::{self, get_app_revocation_queue, push_to_app_revocation_queue},
-    errors::AuthError,
     revocation,
     test_utils::{
         access_container, create_account_and_login, create_authenticator, create_file, fetch_file,
@@ -20,6 +19,7 @@ use crate::{
     },
     {access_container, run, AuthFuture, Authenticator},
 };
+use safe_core::ffi::errors::AuthError;
 use futures::{future, Future};
 use safe_core::{
     app_container_name,

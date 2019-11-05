@@ -9,7 +9,8 @@
 use crate::access_container::{self, AUTHENTICATOR_ENTRY};
 use crate::client::AuthClient;
 use crate::config::KEY_APPS;
-use crate::{AuthError, AuthFuture};
+use safe_core::ffi::errors::AuthError;
+use crate::AuthFuture;
 use futures::{future, Future};
 use maidsafe_utilities::serialisation::serialise;
 use safe_core::ipc::access_container_enc_key;

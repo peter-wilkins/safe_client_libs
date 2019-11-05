@@ -11,7 +11,8 @@ use crate::app_auth;
 use crate::config;
 use crate::ipc::{decode_ipc_msg, decode_share_mdata_req, encode_response, update_container_perms};
 use crate::revocation::{flush_app_revocation_queue, revoke_app};
-use crate::{AuthError, Authenticator};
+use safe_core::ffi::errors::AuthError;
+use crate::Authenticator;
 use ffi_utils::{
     catch_unwind_cb, from_c_str, FfiResult, NativeResult, OpaqueCtx, ReprC, SafePtr, FFI_RESULT_OK,
 };

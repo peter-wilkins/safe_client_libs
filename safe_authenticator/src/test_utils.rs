@@ -11,7 +11,7 @@
 #![allow(clippy::not_unsafe_ptr_arg_deref)]
 
 use crate::client::AuthClient;
-use crate::errors::AuthError;
+use safe_core::ffi::errors::AuthError;
 use crate::ipc::decode_ipc_msg;
 use crate::{access_container, app_auth, config, revocation, run, Authenticator};
 use env_logger::{fmt::Formatter, Builder as LoggerBuilder};

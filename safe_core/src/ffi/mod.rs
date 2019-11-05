@@ -16,6 +16,7 @@ pub mod arrays;
 pub mod ipc;
 /// NFS API.
 pub mod nfs;
+pub mod errors;
 
 use self::arrays::*;
 use safe_nd::MDataKind as NativeMDataKind;

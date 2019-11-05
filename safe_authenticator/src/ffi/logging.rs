@@ -8,7 +8,7 @@
 
 //! Logging utilities
 
-use super::AuthError;
+use safe_core::ffi::errors::AuthError;
 use config_file_handler::FileHandler;
 use ffi_utils::{catch_unwind_cb, from_c_str, FfiResult, FFI_RESULT_OK};
 use maidsafe_utilities::log;

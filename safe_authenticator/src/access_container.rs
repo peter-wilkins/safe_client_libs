@@ -10,7 +10,8 @@
 //!
 //! Access container is stored in the user's session packet.
 
-use super::{AuthError, AuthFuture};
+use safe_core::ffi::errors::AuthError;
+use super::AuthFuture;
 use crate::client::AuthClient;
 use futures::Future;
 use maidsafe_utilities::serialisation::{deserialise, serialise};

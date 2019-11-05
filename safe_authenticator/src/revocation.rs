@@ -8,7 +8,8 @@
 
 //! App revocation functions
 
-use super::{AuthError, AuthFuture};
+use safe_core::ffi::errors::AuthError;
+use super::AuthFuture;
 use crate::access_container;
 use crate::client::AuthClient;
 use crate::config::{self, AppInfo, RevocationQueue};

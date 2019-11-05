@@ -9,7 +9,8 @@
 //! Functionality relating to the Authenticator configuration, including things related to app info
 //! and the revocation queue.
 
-use super::{AuthError, AuthFuture};
+use safe_core::ffi::errors::AuthError;
+use super::AuthFuture;
 use crate::client::AuthClient;
 use futures::future::{self, Either, Loop};
 use futures::Future;

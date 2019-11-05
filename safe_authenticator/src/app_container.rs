@@ -10,7 +10,8 @@
 
 use crate::access_container;
 use crate::client::AuthClient;
-use crate::{AuthError, AuthFuture};
+use safe_core::ffi::errors::AuthError;
+use super::AuthFuture;
 use futures::Future;
 use safe_core::{app_container_name, nfs, Client, FutureExt, MDataInfo, DIR_TAG};
 use safe_nd::{MDataAction, MDataKind, MDataPermissionSet, MDataSeqEntryActions, PublicKey};

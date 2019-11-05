@@ -76,7 +76,6 @@ pub mod app_auth;
 pub mod app_container;
 pub mod apps;
 pub mod config;
-pub mod errors;
 pub mod ffi;
 pub mod ipc;
 pub mod revocation;
@@ -94,7 +93,7 @@ mod std_dirs;
 #[cfg(test)]
 mod tests;
 
-pub use self::errors::AuthError;
+pub use safe_core::ffi::errors::AuthError;
 pub use client::AuthClient;
 
 use futures::stream::Stream;

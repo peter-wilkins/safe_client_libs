@@ -15,7 +15,7 @@ pub mod ipc;
 /// Logging utilities
 pub mod logging;
 
-use crate::errors::AuthError;
+use safe_core::ffi::errors::AuthError;
 use crate::Authenticator;
 use config_file_handler;
 use ffi_utils::{catch_unwind_cb, from_c_str, FfiResult, OpaqueCtx, FFI_RESULT_OK};

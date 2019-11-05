@@ -10,7 +10,8 @@ use crate::apps::{
     apps_accessing_mutable_data, list_registered, list_revoked, remove_revoked_app,
     RegisteredApp as NativeRegisteredApp,
 };
-use crate::{AuthError, Authenticator};
+use safe_core::ffi::errors::AuthError;
+use crate::Authenticator;
 use ffi_utils::{catch_unwind_cb, from_c_str, FfiResult, OpaqueCtx, SafePtr, FFI_RESULT_OK};
 use futures::Future;
 use safe_core::ffi::arrays::XorNameArray;
@@ -201,7 +202,7 @@ pub unsafe extern "C" fn auth_apps_accessing_mutable_data(
 mod tests {
     use crate::app_auth::{app_state, AppState};
     use crate::app_container::fetch;
-    use crate::errors::{ERR_UNEXPECTED, ERR_UNKNOWN_APP};
+    use safe_core::ffi::errors::{ERR_UNEXPECTED, ERR_UNKNOWN_APP};
     use crate::revocation::revoke_app;
     use crate::test_utils::{
         create_account_and_login, create_file, fetch_file, get_app_or_err, rand_app, register_app,
