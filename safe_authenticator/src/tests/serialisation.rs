@@ -244,7 +244,7 @@ fn setup() -> Stash {
             app: app_exchange_info,
             app_container: false,
             app_permissions: Default::default(),
-            containers: containers.clone(),
+            containers,
         }
     };
     let balance_sk = threshold_crypto::SecretKey::random();

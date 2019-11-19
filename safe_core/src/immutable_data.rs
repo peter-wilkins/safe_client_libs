@@ -315,7 +315,7 @@ mod tests {
 
         // Put unpublished Retrieve published - Should fail
         {
-            let value = value.clone();
+            let value = value;
 
             random_client(move |client| {
                 let client2 = client.clone();

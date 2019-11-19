@@ -212,7 +212,7 @@ pub unsafe extern "C" fn mdata_entries(
 
         send(app, user_data, o_cb, move |client, context| {
             let context = context.clone();
-            let info = info.clone();
+            let info = info;
 
             client
                 .list_seq_mdata_entries(info.name(), info.type_tag())

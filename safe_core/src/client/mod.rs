@@ -129,7 +129,7 @@ fn send_as_helper(
     let mut cm2 = cm.clone();
 
     Box::new(
-        cm.bootstrap(identity.clone())
+        cm.bootstrap(identity)
             .and_then(move |_| cm2.send(&pub_id, &message)),
     )
 }
@@ -236,7 +236,7 @@ pub trait Client: Clone + 'static {
     /// Put unsequenced mutable data to the network
     fn put_unseq_mutable_data(&self, data: UnseqMutableData) -> Box<CoreFuture<()>> {
         trace!("Put Unsequenced MData at {:?}", data.name());
-        send_mutation(self, Request::PutMData(MData::Unseq(data.clone())))
+        send_mutation(self, Request::PutMData(MData::Unseq(data)))
     }
 
     /// Transfer coin balance
@@ -1026,7 +1026,7 @@ pub trait Client: Clone + 'static {
             Request::SetMDataUserPermissions {
                 address,
                 user,
-                permissions: permissions.clone(),
+                permissions,
                 version,
             },
         )
@@ -1136,7 +1136,7 @@ where
     let full_id = SafeKey::client_from_bls_key(identity.clone());
     let (net_tx, _net_rx) = mpsc::unbounded();
 
-    let mut cm = ConnectionManager::new(Config::new().quic_p2p, &net_tx.clone())?;
+    let mut cm = ConnectionManager::new(Config::new().quic_p2p, &net_tx)?;
     block_on_all(cm.bootstrap(full_id.clone()).map_err(CoreError::from))?;
 
     let res = func(&mut cm, &full_id);
@@ -1409,10 +1409,8 @@ mod tests {
             let data = PubImmutableData::new(value.clone());
             let address = *data.address();
 
-            let test_data = UnpubImmutableData::new(
-                value.clone(),
-                PublicKey::Bls(BlsSecretKey::random().public_key()),
-            );
+            let test_data =
+                UnpubImmutableData::new(value, PublicKey::Bls(BlsSecretKey::random().public_key()));
             client
                 // Get inexistent idata
                 .get_idata(address)
@@ -1554,7 +1552,7 @@ mod tests {
             let mut entries: BTreeMap<Vec<u8>, Vec<u8>> = Default::default();
             let mut permissions: BTreeMap<_, _> = Default::default();
             let permission_set = MDataPermissionSet::new().allow(MDataAction::Read);
-            let _ = permissions.insert(client.public_key(), permission_set.clone());
+            let _ = permissions.insert(client.public_key(), permission_set);
             let _ = entries.insert(b"key".to_vec(), b"value".to_vec());
             let entries_keys = entries.keys().cloned().collect();
             let entries_values: Vec<Vec<u8>> = entries.values().cloned().collect();
@@ -1631,7 +1629,7 @@ mod tests {
             let entries_values: Vec<MDataSeqValue> = entries.values().cloned().collect();
             let mut permissions: BTreeMap<_, _> = Default::default();
             let permission_set = MDataPermissionSet::new().allow(MDataAction::Read);
-            let _ = permissions.insert(client.public_key(), permission_set.clone());
+            let _ = permissions.insert(client.public_key(), permission_set);
             let data = SeqMutableData::new_with_data(
                 name,
                 tag,
@@ -1702,11 +1700,7 @@ mod tests {
 
             client
                 .put_seq_mutable_data(data.clone())
-                .and_then(move |_| {
-                    client2.delete_mdata(mdataref).map(move |result| {
-                        assert_eq!(result, ());
-                    })
-                })
+                .and_then(move |_| client2.delete_mdata(mdataref))
                 .then(move |_| {
                     client3
                         .get_unseq_mdata(*data.name(), data.tag())
@@ -1741,12 +1735,7 @@ mod tests {
 
             client
                 .put_unseq_mutable_data(data.clone())
-                .and_then(move |_| {
-                    client2.delete_mdata(mdataref).and_then(move |result| {
-                        assert_eq!(result, ());
-                        Ok(())
-                    })
-                })
+                .and_then(move |_| client2.delete_mdata(mdataref).and_then(move |_| Ok(())))
                 .then(move |_| {
                     client3
                         .get_unseq_mdata(*data.name(), data.tag())
@@ -2010,7 +1999,7 @@ mod tests {
                 client.public_key(),
             );
 
-            client.put_unseq_mutable_data(data.clone()).then(|res| res)
+            client.put_unseq_mutable_data(data).then(|res| res)
         });
 
         random_client(move |client| {
@@ -2050,7 +2039,7 @@ mod tests {
             let user2 = user;
             let random_user = PublicKey::Bls(BlsSecretKey::random().public_key());
             let _ = permissions.insert(user, permission_set.clone());
-            let _ = permissions.insert(random_user, permission_set.clone());
+            let _ = permissions.insert(random_user, permission_set);
             let data = SeqMutableData::new_with_data(
                 name,
                 tag,
@@ -2066,11 +2055,8 @@ mod tests {
                 PublicKey::Bls(BlsSecretKey::random().public_key()),
             );
             client
-                .put_seq_mutable_data(data.clone())
-                .and_then(move |res| {
-                    assert_eq!(res, ());
-                    Ok(())
-                })
+                .put_seq_mutable_data(data)
+                .and_then(move |_| Ok(()))
                 .and_then(move |_| {
                     client1
                         .put_seq_mutable_data(test_data.clone())
@@ -2098,10 +2084,7 @@ mod tests {
                             new_perm_set,
                             1,
                         )
-                        .then(move |res| {
-                            assert_eq!(unwrap!(res), ());
-                            Ok(())
-                        })
+                        .then(move |_| Ok(()))
                 })
                 .and_then(move |_| {
                     println!("Modified user permissions");
@@ -2120,10 +2103,7 @@ mod tests {
                 .and_then(move |_| {
                     client5
                         .del_mdata_user_permissions(MDataAddress::Seq { name, tag }, random_user, 2)
-                        .then(move |res| {
-                            assert_eq!(unwrap!(res), ());
-                            Ok(())
-                        })
+                        .then(move |_| Ok(()))
                 })
                 .and_then(move |_| {
                     println!("Deleted permissions");
@@ -2159,7 +2139,7 @@ mod tests {
                 .allow(MDataAction::Update)
                 .allow(MDataAction::Delete);
             let user = client.public_key();
-            let _ = permissions.insert(user, permission_set.clone());
+            let _ = permissions.insert(user, permission_set);
             let mut entries: MDataSeqEntries = Default::default();
             let _ = entries.insert(
                 b"key1".to_vec(),
@@ -2183,7 +2163,7 @@ mod tests {
                 client.public_key(),
             );
             client
-                .put_seq_mutable_data(data.clone())
+                .put_seq_mutable_data(data)
                 .and_then(move |_| {
                     println!("Put seq. MData successfully");
 
@@ -2200,11 +2180,8 @@ mod tests {
                         .ins(b"key3".to_vec(), b"value".to_vec(), 0);
 
                     client3
-                        .mutate_seq_mdata_entries(name, tag, entry_actions.clone())
-                        .then(move |res| {
-                            assert_eq!(unwrap!(res), ());
-                            Ok(())
-                        })
+                        .mutate_seq_mdata_entries(name, tag, entry_actions)
+                        .then(move |_| Ok(()))
                 })
                 .and_then(move |_| {
                     client4
@@ -2236,7 +2213,7 @@ mod tests {
                                 fetched_value,
                                 MDataSeqValue {
                                     data: b"value".to_vec(),
-                                    version: 0
+                                    version: 0,
                                 }
                             );
                             Ok(())
@@ -2271,7 +2248,7 @@ mod tests {
                 .allow(MDataAction::Update)
                 .allow(MDataAction::Delete);
             let user = client.public_key();
-            let _ = permissions.insert(user, permission_set.clone());
+            let _ = permissions.insert(user, permission_set);
             let mut entries: BTreeMap<Vec<u8>, Vec<u8>> = Default::default();
             let _ = entries.insert(b"key1".to_vec(), b"value".to_vec());
             let _ = entries.insert(b"key2".to_vec(), b"value".to_vec());
@@ -2283,7 +2260,7 @@ mod tests {
                 client.public_key(),
             );
             client
-                .put_unseq_mutable_data(data.clone())
+                .put_unseq_mutable_data(data)
                 .and_then(move |_| {
                     println!("Put unseq. MData successfully");
 
@@ -2300,11 +2277,8 @@ mod tests {
                         .ins(b"key3".to_vec(), b"value".to_vec());
 
                     client3
-                        .mutate_unseq_mdata_entries(name, tag, entry_actions.clone())
-                        .then(move |res| {
-                            assert_eq!(unwrap!(res), ());
-                            Ok(())
-                        })
+                        .mutate_unseq_mdata_entries(name, tag, entry_actions)
+                        .then(move |_| Ok(()))
                 })
                 .and_then(move |_| {
                     client4
@@ -2373,7 +2347,7 @@ mod tests {
             unwrap!(data.append_owner(owner, 0));
 
             client
-                .put_adata(AData::UnpubSeq(data.clone()))
+                .put_adata(AData::UnpubSeq(data))
                 .and_then(move |_| {
                     client1.get_adata(address).map(move |data| match data {
                         AData::UnpubSeq(adata) => assert_eq!(*adata.name(), name),
@@ -2491,10 +2465,7 @@ mod tests {
             unwrap!(test_data.append_owner(test_owner, 0));
 
             client
-                .put_adata(AData::UnpubSeq(data.clone()))
-                .map(move |res| {
-                    assert_eq!(res, ());
-                })
+                .put_adata(AData::UnpubSeq(data))
                 .and_then(move |_| {
                     client1
                         .put_adata(AData::UnpubSeq(test_data.clone()))
@@ -2545,7 +2516,7 @@ mod tests {
                     client6
                         .add_unpub_adata_permissions(adataref, perm_set, 1)
                         .then(move |res| {
-                            assert_eq!(unwrap!(res), ());
+                            assert!(res.is_ok());
                             Ok(())
                         })
                 })
@@ -2619,10 +2590,10 @@ mod tests {
             unwrap!(data.append_owner(owner, 0));
 
             client
-                .put_adata(AData::PubSeq(data.clone()))
+                .put_adata(AData::PubSeq(data))
                 .and_then(move |_| {
                     client1.append_seq_adata(append, 0).then(move |res| {
-                        assert_eq!(unwrap!(res), ());
+                        assert!(res.is_ok());
                         Ok(())
                     })
                 })
@@ -2685,10 +2656,10 @@ mod tests {
             unwrap!(data.append_owner(owner, 0));
 
             client
-                .put_adata(AData::UnpubUnseq(data.clone()))
+                .put_adata(AData::UnpubUnseq(data))
                 .and_then(move |_| {
                     client1.append_unseq_adata(append).then(move |res| {
-                        assert_eq!(unwrap!(res), ());
+                        assert!(res.is_ok());
                         Ok(())
                     })
                 })
@@ -2762,22 +2733,16 @@ mod tests {
             };
 
             client
-                .put_adata(AData::UnpubUnseq(data.clone()))
+                .put_adata(AData::UnpubUnseq(data))
                 .and_then(move |_| {
                     client1
                         .set_adata_owners(adataref, owner2, 1)
                         .then(move |res| {
-                            assert_eq!(unwrap!(res), ());
+                            assert!(res.is_ok());
                             Ok(())
                         })
                 })
-                .and_then(move |_| {
-                    client2
-                        .set_adata_owners(adataref, owner3, 2)
-                        .map(move |data| {
-                            assert_eq!(data, ());
-                        })
-                })
+                .and_then(move |_| client2.set_adata_owners(adataref, owner3, 2))
                 .and_then(move |_| {
                     client3.get_adata(adataref).map(move |data| match data {
                         AData::UnpubUnseq(adata) => assert_eq!(adata.owners_index(), 3),

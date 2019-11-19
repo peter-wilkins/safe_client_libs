@@ -271,7 +271,7 @@ fn unregistered_client() {
     {
         let pub_idata = pub_idata.clone();
         let mut pub_adata = pub_adata.clone();
-        let mut unpub_adata = unpub_adata.clone();
+        let mut unpub_adata = unpub_adata;
         random_client(|client| {
             let owner = ADataOwner {
                 public_key: client.owner_key(),
@@ -349,8 +349,8 @@ fn published_data_access() {
     // Create a random client and store some data
     {
         let pub_idata = pub_idata.clone();
-        let mut pub_seq_adata = pub_seq_adata.clone();
-        let mut pub_unseq_adata = pub_unseq_adata.clone();
+        let mut pub_seq_adata = pub_seq_adata;
+        let mut pub_unseq_adata = pub_unseq_adata;
         random_client(|client| {
             let owner = ADataOwner {
                 public_key: client.owner_key(),

@@ -323,7 +323,7 @@ fn open_file() {
         )))
     };
 
-    let mut expected_content = content.clone();
+    let mut expected_content = content;
     expected_content.extend(&append_content);
 
     assert_eq!(retrieved_content, expected_content);
@@ -640,7 +640,7 @@ fn open_close_file() {
 
     // Create a file.
     let user_metadata = b"metadata".to_vec();
-    let file = NativeFile::new(user_metadata.clone(), true);
+    let file = NativeFile::new(user_metadata, true);
     let ffi_file = file.into_repr_c();
 
     let content = unwrap!(utils::generate_random_vector(10));
